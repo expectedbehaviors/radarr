@@ -6,20 +6,9 @@
 */ -}}
 {{- $configXmlValues := .Values.externalSecrets.configXml | default dict }}
 {{- $configOptions := $configXmlValues.options | default dict }}
-{{- $databaseMode := lower ($configXmlValues.databaseMode | default "auto") }}
-{{- $bitnamiPostgresqlEnabled := .Values.postgresql.enabled | default false }}
-{{- $postgresqlOperatorEnabled := .Values.postgresqlOperator.enabled | default false }}
-{{- $postgresHostOverride := $configXmlValues.postgresHost | default "" }}
-{{- $managedPostgresqlConfigured := or $bitnamiPostgresqlEnabled $postgresqlOperatorEnabled }}
-{{- $autoModeUsesPostgresql := or $managedPostgresqlConfigured (ne $postgresHostOverride "") }}
-{{- $postgresqlBlockEnabled := false }}
-{{- if eq $databaseMode "sqlite" }}
-  {{- $postgresqlBlockEnabled = false }}
-{{- else if or (eq $databaseMode "postgres") (eq $databaseMode "external-postgres") (eq $databaseMode "external") }}
-  {{- $postgresqlBlockEnabled = true }}
-{{- else }}
-  {{- $postgresqlBlockEnabled = $autoModeUsesPostgresql }}
-{{- end }}
+{{- $postgresConfig := $configXmlValues.postgres | default dict }}
+{{- $postgresMethod := lower ($postgresConfig.method | default "bitnami") }}
+{{- $postgresqlBlockEnabled := ne $postgresMethod "sqlite" }}
 <Config>
   <LogLevel>{{ $configOptions.logLevel | default "Info" }}</LogLevel>
   <Port>{{ $configOptions.port | default "7878" }}</Port>
@@ -35,17 +24,19 @@
   <AnalyticsEnabled>{{ $configOptions.analyticsEnabled | default "False" }}</AnalyticsEnabled>
   <UpdateAutomatically>{{ $configOptions.updateAutomatically | default "True" }}</UpdateAutomatically>
   <InstanceName>{{ $configOptions.instanceName | default "Radarr" }}</InstanceName>
-  {{- $postgresDefaultHost := printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace }}
-  {{- if $postgresqlOperatorEnabled }}
-    {{- $postgresDefaultHost = printf "%s-rw.%s.svc.cluster.local" .Values.postgresqlOperator.clusterName .Release.Namespace }}
-  {{- end }}
   {{- if $postgresqlBlockEnabled }}
-  <PostgresUser>{{ $configXmlValues.postgresUser | default "postgres" }}</PostgresUser>
+  {{- $postgresDefaultHost := printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace }}
+  {{- if eq $postgresMethod "operator" }}
+    {{- $postgresDefaultHost = printf "%s-rw.%s.svc.cluster.local" .Values.postgresqlOperator.clusterName .Release.Namespace }}
+  {{- else if eq $postgresMethod "external" }}
+    {{- $postgresDefaultHost = required "externalSecrets.configXml.postgres.host is required when postgres.method=external" $postgresConfig.host }}
+  {{- end }}
+  <PostgresUser>{{ $postgresConfig.user | default "postgres" }}</PostgresUser>
   <PostgresPassword>__POSTGRES_PASSWORD__</PostgresPassword>
-  <PostgresPort>{{ $configXmlValues.postgresPort | default "5432" }}</PostgresPort>
-  <PostgresHost>{{ $configXmlValues.postgresHost | default $postgresDefaultHost }}</PostgresHost>
-  <PostgresMainDb>{{ $configXmlValues.postgresMainDb | default "radarr-main" }}</PostgresMainDb>
-  <PostgresLogDb>{{ $configXmlValues.postgresLogDb | default "radarr-log" }}</PostgresLogDb>
+  <PostgresPort>{{ $postgresConfig.port | default "5432" }}</PostgresPort>
+  <PostgresHost>{{ $postgresConfig.host | default $postgresDefaultHost }}</PostgresHost>
+  <PostgresMainDb>{{ $postgresConfig.mainDb | default "radarr-main" }}</PostgresMainDb>
+  <PostgresLogDb>{{ $postgresConfig.logDb | default "radarr-log" }}</PostgresLogDb>
   {{- end }}
 {{- range $k, $v := $configXmlValues.additionalOptions }}
   <{{ $k }}>{{ $v }}</{{ $k }}>

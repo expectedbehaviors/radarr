@@ -135,19 +135,17 @@ externalSecrets:
     apiKeyRef:
       key: radarr
       property: api_key
-    postgresCredentialsRef:
-      key: radarr-postgresql-credentials
-      property: password
-    # Database mode for config.xml Postgres block: auto|sqlite|postgres|external-postgres
-    databaseMode: auto
-    # Postgres block in config.xml can be disabled for SQLite or migration windows.
-    enablePostgres: true
-    # Leave host empty to auto-compute based on DB mode (bitnami subchart or postgresqlOperator).
-    postgresUser: postgres
-    postgresPort: "5432"
-    postgresHost: ""
-    postgresMainDb: radarr-main
-    postgresLogDb: radarr-log
+    # Postgres method for config.xml: bitnami|operator|external|sqlite
+    postgres:
+      method: bitnami
+      user: postgres
+      port: "5432"
+      host: ""
+      mainDb: radarr-main
+      logDb: radarr-log
+      credentialsRef:
+        key: radarr-postgresql-credentials
+        property: password
     # All config.xml options are configurable; these are defaults matching upstream.
     options:
       logLevel: Info
