@@ -1,6 +1,6 @@
 # Baseline Radarr. Override ingress host, persistence (existingClaim), postgresql (existingSecret), onepassworditem.items in your values.
-# PostgreSQL: use embedded Bitnami (postgresql.enabled, default) or CloudNativePG operator (postgresqlOperator.enabled).
-# When using postgresqlOperator, set postgresql.enabled: false.
+# Database mode for config.xml rendering is externalSecrets.configXml.database.
+# Defaults to sqlite (no Postgres block in config.xml) unless explicitly set.
 postgresqlOperator:
   # Use CloudNativePG PostgresCluster CRD instead of Bitnami. Set postgresql.enabled: false when true.
   enabled: false
@@ -18,6 +18,8 @@ radarr:
   controllers:
     main:
       enabled: true
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       defaultContainerOptions:
         image:
           repository: linuxserver/radarr
@@ -108,7 +110,7 @@ radarr:
         - path: /downloads
 
 postgresql:
-  enabled: true
+  enabled: false
   architecture: standalone
   auth:
     database: radarr-main
@@ -135,9 +137,8 @@ externalSecrets:
     apiKeyRef:
       key: radarr
       property: api_key
-    # Postgres method for config.xml: bitnami|operator|external|sqlite
+    database: sqlite # sqlite|bitnami|operator|external
     postgres:
-      method: bitnami
       user: postgres
       port: "5432"
       host: ""

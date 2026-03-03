@@ -14,9 +14,10 @@ Baseline Helm chart for [Radarr](https://radarr.video) (movie collection manager
 
 | Option | Toggle | Default | Description |
 |--------|--------|---------|-------------|
-| **Bitnami PostgreSQL** | `postgresql.enabled` | `true` | Embedded Bitnami subchart. Set `false` when using operator or external DB. |
+| **DB mode selector** | `externalSecrets.configXml.database` | `sqlite` | `sqlite|bitnami|operator|external` controls Postgres fields in `config.xml`. |
+| **Bitnami PostgreSQL** | `postgresql.enabled` | `false` | Embedded Bitnami subchart. Set `true` when using `database: bitnami`. |
 | **CloudNativePG operator** | `postgresqlOperator.enabled` | `false` | Creates a `PostgresCluster` CRD. Requires CloudNativePG operator. Set `postgresql.enabled: false` when enabled. |
-| **External DB** | Both `false` | — | Use `externalSecrets.configXml.postgresHost` (and credentials) to point at your own PostgreSQL. |
+| **External DB** | `externalSecrets.configXml.database=external` | — | Set `externalSecrets.configXml.postgres.host` and credentials ref. |
 
 When using `postgresqlOperator`, set `postgresqlOperator.bootstrap.existingSecret` to a Secret with `password` key (e.g. from ExternalSecret). The cluster service will be `{{ postgresqlOperator.clusterName }}-rw.{{ Release.Namespace }}.svc.cluster.local`.
 
@@ -31,11 +32,11 @@ Defaults:
 
 - `externalSecrets.enabled: false` — config.xml stays managed by your existing Secret; recommended while you migrate existing PostgreSQL data.
 - `externalSecrets.configXml.options.*` — all config.xml options have defaults matching upstream (port, ssl, theme, analytics, etc.).
-- `externalSecrets.configXml.postgres.method: bitnami|operator|external|sqlite` — single source of truth for DB mode.
+- `externalSecrets.configXml.database: sqlite|bitnami|operator|external` — single source of truth for DB mode.
 - `externalSecrets.configXml.postgres.*` — DB connection values (`host`, `port`, `user`, `mainDb`, `logDb`) and `credentialsRef`.
 - In `sqlite` mode, all `<Postgres*>` tags are omitted from config.xml.
 
-Set `externalSecrets.configXml.postgres.method` to `operator` or `external` as needed. After you have migrated existing data and are ready for ExternalSecrets to own `config.xml`, set `externalSecrets.enabled: true`.
+Set `externalSecrets.configXml.database` to `bitnami`, `operator`, or `external` as needed. After you have migrated existing data and are ready for ExternalSecrets to own `config.xml`, set `externalSecrets.enabled: true`.
 
 ## Recommended resources
 
@@ -76,3 +77,4 @@ helm dependency update . && helm template radarr . -f values.yaml -n radarr
 ## Argo CD
 
 Point your Application at this repo (path: `.`) and pass your values. Namespace typically `radarr`.
+This chart sets pre-workload resources to earlier sync waves (`ExternalSecret: -2`, `PostgresCluster: -1`, workload controller: `1`) so secrets/config inputs apply before pod resources.
