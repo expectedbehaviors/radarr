@@ -27,7 +27,13 @@ When `externalSecrets.enabled: true`, the chart creates an ExternalSecret that s
 - 1Password item (e.g. `radarr`) with `api_key`
 - Postgres credentials item (e.g. `radarr-postgresql-credentials`) with `password`
 
-Override `externalSecrets.configXml.postgresHost` when using postgresqlOperator or external cluster.
+Defaults:
+
+- `externalSecrets.enabled: false` — config.xml stays managed by your existing Secret; recommended while you migrate existing PostgreSQL data.
+- `externalSecrets.configXml.options.*` — all config.xml options have defaults matching upstream (port, ssl, theme, analytics, etc.).
+- `externalSecrets.configXml.postgres*` — defaults point at the embedded Bitnami PostgreSQL.
+
+Override `externalSecrets.configXml.postgresHost` when using postgresqlOperator or external cluster. After you have migrated existing data and are ready for ExternalSecrets to own `config.xml`, set `externalSecrets.enabled: true`.
 
 ## Key values
 

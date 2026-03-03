@@ -138,12 +138,28 @@ externalSecrets:
     postgresCredentialsRef:
       key: radarr-postgresql-credentials
       property: password
-    # Override postgres host/user/db when using postgresqlOperator or external cluster
-    # postgresHost: radarr-postgresql-rw.radarr.svc.cluster.local
-    # postgresUser: postgres
-    # postgresPort: "5432"
-    # postgresMainDb: radarr-main
-    # postgresLogDb: radarr-log
+    # Postgres connection for config.xml; override when using postgresqlOperator or external cluster.
+    postgresUser: postgres
+    postgresPort: "5432"
+    postgresHost: postgresql-rw.postgresql.svc.cluster.local
+    postgresMainDb: radarr-main
+    postgresLogDb: radarr-log
+    # All config.xml options are configurable; these are defaults matching upstream.
+    options:
+      logLevel: Info
+      port: "7878"
+      urlBase: ""
+      bindAddress: "*"
+      sslPort: "7878"
+      enableSsl: "False"
+      authenticationMethod: Basic
+      branch: nightly
+      launchBrowser: "False"
+      updateMechanism: Docker
+      analyticsEnabled: "False"
+      updateAutomatically: "True"
+      instanceName: Radarr
+    # additionalOptions: {} # map of extra <Key>Value</Key> elements to append into config.xml
 
 onepassworditem:
   enabled: true
