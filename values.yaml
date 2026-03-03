@@ -1,4 +1,17 @@
 # Baseline Radarr. Override ingress host, persistence (existingClaim), postgresql (existingSecret), onepassworditem.items in your values.
+# PostgreSQL: use embedded Bitnami (postgresql.enabled, default) or CloudNativePG operator (postgresqlOperator.enabled).
+# When using postgresqlOperator, set postgresql.enabled: false.
+postgresqlOperator:
+  # Use CloudNativePG PostgresCluster CRD instead of Bitnami. Set postgresql.enabled: false when true.
+  enabled: false
+  clusterName: radarr-postgresql
+  instances: 1
+  storageSize: 5Gi
+  storageClass: ""
+  # Bootstrap secret for superuser. Create via ExternalSecret or 1Password; must have 'password' key.
+  bootstrap:
+    existingSecret: ""
+
 radarr:
   global:
     fullnameOverride: radarr
@@ -95,6 +108,7 @@ radarr:
         - path: /downloads
 
 postgresql:
+  enabled: true
   architecture: standalone
   auth:
     database: radarr-main
@@ -108,6 +122,28 @@ postgresql:
       requests:
         cpu: "1"
         memory: 2Gi
+
+# ExternalSecrets: sync config.xml (api_key + postgres) from 1Password. When enabled, remove app item from onepassworditem.items.
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: onepassword-connect
+    kind: ClusterSecretStore
+  configXml:
+    secretName: radarr
+    apiKeyRef:
+      key: radarr
+      property: api_key
+    postgresCredentialsRef:
+      key: radarr-postgresql-credentials
+      property: password
+    # Override postgres host/user/db when using postgresqlOperator or external cluster
+    # postgresHost: radarr-postgresql-rw.radarr.svc.cluster.local
+    # postgresUser: postgres
+    # postgresPort: "5432"
+    # postgresMainDb: radarr-main
+    # postgresLogDb: radarr-log
 
 onepassworditem:
   enabled: true

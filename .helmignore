@@ -1,0 +1,2 @@
+# Exclude from chart package (per no-cruft-in-prs.mdc)
+Chart.lock
