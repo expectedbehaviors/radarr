@@ -27,10 +27,6 @@ jobs:
         uses: expectedbehaviors/github-actions/.github/actions/helm-lint@main
         with:
           chart_path: .
-          helm_repositories: |
-            bjw-s=https://bjw-s-labs.github.io/helm-charts
-            onepassworditem=https://expectedbehaviors.github.io/OnePasswordItem-helm
-            bitnami=https://charts.bitnami.com/bitnami
 
   release:
     runs-on: ubuntu-latest
