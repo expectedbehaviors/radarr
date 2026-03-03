@@ -23,19 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: "v3.14.0"
-      - name: Add Helm repos
-        run: |
-          helm repo add bjw-s https://bjw-s-labs.github.io/helm-charts
-          helm repo add onepassworditem https://expectedbehaviors.github.io/OnePasswordItem-helm
-          helm repo add bitnami https://charts.bitnami.com/bitnami
       - name: Lint chart
-        run: |
-          helm dependency update .
-          helm lint .
+        uses: expectedbehaviors/github-actions/.github/actions/helm-lint@main
+        with:
+          chart_path: .
+          helm_repositories: |
+            bjw-s=https://bjw-s-labs.github.io/helm-charts
+            onepassworditem=https://expectedbehaviors.github.io/OnePasswordItem-helm
+            bitnami=https://charts.bitnami.com/bitnami
 
   release:
     runs-on: ubuntu-latest

@@ -31,9 +31,18 @@ Defaults:
 
 - `externalSecrets.enabled: false` — config.xml stays managed by your existing Secret; recommended while you migrate existing PostgreSQL data.
 - `externalSecrets.configXml.options.*` — all config.xml options have defaults matching upstream (port, ssl, theme, analytics, etc.).
-- `externalSecrets.configXml.postgres*` — defaults point at the embedded Bitnami PostgreSQL.
+- `externalSecrets.configXml.databaseMode: auto` — auto-detect DB mode. Supported values: `auto`, `sqlite`, `postgres`, `external-postgres`.
+- `externalSecrets.configXml.postgres*` — defaults point at in-cluster DB endpoints and are only rendered when Postgres mode is active.
+- `externalSecrets.configXml.enablePostgres` — explicit override to force on/off rendering of Postgres tags in config.xml.
 
 Override `externalSecrets.configXml.postgresHost` when using postgresqlOperator or external cluster. After you have migrated existing data and are ready for ExternalSecrets to own `config.xml`, set `externalSecrets.enabled: true`.
+
+## Recommended resources
+
+- **Official docs:** https://radarr.video/docs/
+- **Servarr wiki:** https://wiki.servarr.com/radarr
+- **TRaSH Guides (Radarr):** https://trash-guides.info/Radarr/
+- **Recyclarr docs:** https://recyclarr.dev/wiki/
 
 ## Key values
 
