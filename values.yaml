@@ -1,0 +1,114 @@
+# Baseline Radarr. Override ingress host, persistence (existingClaim), postgresql (existingSecret), onepassworditem.items in your values.
+radarr:
+  global:
+    fullnameOverride: radarr
+  controllers:
+    main:
+      enabled: true
+      defaultContainerOptions:
+        image:
+          repository: linuxserver/radarr
+          tag: nightly
+          pullPolicy: Always
+      containers:
+        main:
+          env:
+            DOCKER_MODS: linuxserver/mods:radarr-striptracks|ghcr.io/themepark-dev/theme.park:radarr
+            PGID: "1000"
+            PUID: "1000"
+            TP_HOTIO: "false"
+            TP_SCHEME: HTTPS
+            TP_THEME: aquamarine
+            TZ: UTC
+            UMASK: "2"
+          probes:
+            startup:
+              enabled: true
+              custom: true
+              spec:
+                failureThreshold: 90
+                periodSeconds: 5
+                successThreshold: 1
+                tcpSocket:
+                  port: 7878
+                timeoutSeconds: 1
+                initialDelaySeconds: 60
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: true
+            readOnlyRootFilesystem: false
+            runAsGroup: 0
+            runAsNonRoot: false
+            runAsUser: 0
+  defaultPodOptions:
+    securityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: "Always"
+  service:
+    main:
+      enabled: true
+      ports:
+        http:
+          enabled: true
+          port: 7878
+          protocol: HTTP
+  ingress:
+    main:
+      enabled: true
+      annotations: {}
+      hosts:
+        - host: radarr.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - radarr.example.com
+          secretName: radarr-tls
+  persistence:
+    radarr-secrets:
+      enabled: true
+      type: secret
+      name: radarr
+      globalMounts:
+        - path: /config/config.xml
+          subPath: config.xml
+        - path: /custom-cont-init.d/scripts_init.bash
+          subPath: scripts_init.bash
+        - path: /config/extended.conf
+          subPath: extended.conf
+        - path: /config/recyclarr.yaml
+          subPath: recyclarr.yaml
+    custom-services:
+      enabled: true
+      type: emptyDir
+      globalMounts:
+        - path: /custom-services.d
+    downloads:
+      enabled: true
+      type: emptyDir
+      globalMounts:
+        - path: /downloads
+
+postgresql:
+  architecture: standalone
+  auth:
+    database: radarr-main
+    password: changeme
+  primary:
+    persistence:
+      enabled: true
+      size: 5Gi
+    name: radarr-main
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+
+onepassworditem:
+  enabled: true
+  items: []

@@ -1,0 +1,12 @@
+dependencies:
+- name: app-template
+  repository: https://bjw-s-labs.github.io/helm-charts
+  version: 4.6.2
+- name: onepassworditem
+  repository: https://expectedbehaviors.github.io/OnePasswordItem-helm
+  version: 1.1.1
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.2.1
+digest: sha256:b6f2147fe0194660017e32874a0518fdc28e30225f460d87317407c364b7d208
+generated: "2026-03-02T20:08:57.9623867-08:00"
