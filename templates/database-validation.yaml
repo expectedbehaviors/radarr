@@ -1,0 +1,34 @@
+{{- $configXmlValues := .Values.externalSecrets.configXml | default dict -}}
+{{- $postgresConfig := $configXmlValues.postgres | default dict -}}
+{{- $databaseMode := lower ($configXmlValues.database | default ($postgresConfig.method | default "sqlite")) -}}
+{{- $bitnamiEnabled := .Values.postgresql.enabled | default false -}}
+{{- $operatorEnabled := .Values.postgresqlOperator.enabled | default false -}}
+{{- $validDatabaseModes := dict "sqlite" true "bitnami" true "operator" true "external" true -}}
+
+{{- if not (hasKey $validDatabaseModes $databaseMode) -}}
+{{- fail (printf "Invalid externalSecrets.configXml.database value %q. Expected one of: sqlite|bitnami|operator|external" $databaseMode) -}}
+{{- end -}}
+
+{{- if and $bitnamiEnabled $operatorEnabled -}}
+{{- fail "Conflicting database definitions: postgresql.enabled and postgresqlOperator.enabled cannot both be true" -}}
+{{- end -}}
+
+{{- if and (eq $databaseMode "bitnami") (not $bitnamiEnabled) -}}
+{{- fail "database=bitnami requires postgresql.enabled=true" -}}
+{{- end -}}
+
+{{- if and (eq $databaseMode "operator") (not $operatorEnabled) -}}
+{{- fail "database=operator requires postgresqlOperator.enabled=true" -}}
+{{- end -}}
+
+{{- if and (eq $databaseMode "external") (or $bitnamiEnabled $operatorEnabled) -}}
+{{- fail "database=external requires postgresql.enabled=false and postgresqlOperator.enabled=false" -}}
+{{- end -}}
+
+{{- if and (eq $databaseMode "sqlite") (or $bitnamiEnabled $operatorEnabled) -}}
+{{- fail "database=sqlite requires postgresql.enabled=false and postgresqlOperator.enabled=false" -}}
+{{- end -}}
+
+{{- if and (eq $databaseMode "external") (not $postgresConfig.host) -}}
+{{- fail "database=external requires externalSecrets.configXml.postgres.host to be set" -}}
+{{- end -}}
