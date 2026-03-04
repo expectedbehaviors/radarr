@@ -1,0 +1,35 @@
+apiVersion: v1
+entries:
+  radarr:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-03-04T05:14:07.448944781Z"
+    dependencies:
+    - alias: radarr
+      name: app-template
+      repository: https://bjw-s-labs.github.io/helm-charts
+      version: 4.6.2
+    - name: onepassworditem
+      repository: https://expectedbehaviors.github.io/OnePasswordItem-helm
+      version: 1.1.1
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.2.1
+    description: Radarr (movies) via bjw-s app-template. PostgreSQL and 1Password
+      items. Override ingress, persistence, postgresql in your values.
+    digest: 5d55a418d08f60b4f76ccac0683d7c57d9100885ce0e88e49a143b37bc266335
+    home: https://radarr.video
+    keywords:
+    - radarr
+    - movies
+    - bjw-s
+    - app-template
+    kubeVersion: '>=1.22.0-0'
+    name: radarr
+    sources:
+    - https://github.com/Radarr/Radarr
+    urls:
+    - https://expectedbehaviors.github.io/radarr/radarr-1.0.0.tgz
+    version: 1.0.0
+generated: "2026-03-04T05:14:07.435416981Z"
