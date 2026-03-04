@@ -33,8 +33,10 @@ Defaults:
 - `externalSecrets.enabled: false` — config.xml stays managed by your existing Secret; recommended while you migrate existing PostgreSQL data.
 - `externalSecrets.configXml.options.*` — all config.xml options have defaults matching upstream (port, ssl, theme, analytics, etc.).
 - `externalSecrets.configXml.database: sqlite|bitnami|operator|external` — single source of truth for DB mode.
+- If `externalSecrets.configXml.database` is omitted, templates fall back to legacy `externalSecrets.configXml.postgres.method` for backward compatibility.
 - `externalSecrets.configXml.postgres.*` — DB connection values (`host`, `port`, `user`, `mainDb`, `logDb`) and `credentialsRef`.
 - In `sqlite` mode, all `<Postgres*>` tags are omitted from config.xml.
+- Charts fail render for invalid/ambiguous DB combinations (for example `database=bitnami` while `postgresql.enabled=false`).
 
 Set `externalSecrets.configXml.database` to `bitnami`, `operator`, or `external` as needed. After you have migrated existing data and are ready for ExternalSecrets to own `config.xml`, set `externalSecrets.enabled: true`.
 

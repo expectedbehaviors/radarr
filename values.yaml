@@ -137,6 +137,7 @@ externalSecrets:
     apiKeyRef:
       key: radarr
       property: api_key
+    # database is authoritative; when omitted, templates fall back to legacy postgres.method for backward compatibility.
     database: sqlite # sqlite|bitnami|operator|external
     postgres:
       user: postgres
