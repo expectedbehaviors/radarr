@@ -2,7 +2,7 @@ apiVersion: v2
 name: radarr
 description: Radarr (movies) via bjw-s app-template. PostgreSQL and 1Password items. Override ingress, persistence, postgresql in your values.
 version: 1.0.0
-appVersion: "4.2.2"
+appVersion: "1.0.0"
 kubeVersion: ">=1.22.0-0"
 keywords:
   - radarr
