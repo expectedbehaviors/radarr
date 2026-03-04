@@ -1,10 +1,25 @@
 # Baseline Radarr. Override ingress host, persistence (existingClaim), postgresql (existingSecret), onepassworditem.items in your values.
+# Database mode for config.xml rendering is externalSecrets.configXml.database.
+# Defaults to sqlite (no Postgres block in config.xml) unless explicitly set.
+postgresqlOperator:
+  # Use CloudNativePG PostgresCluster CRD instead of Bitnami. Set postgresql.enabled: false when true.
+  enabled: false
+  clusterName: radarr-postgresql
+  instances: 1
+  storageSize: 5Gi
+  storageClass: ""
+  # Bootstrap secret for superuser. Create via ExternalSecret or 1Password; must have 'password' key.
+  bootstrap:
+    existingSecret: ""
+
 radarr:
   global:
     fullnameOverride: radarr
   controllers:
     main:
       enabled: true
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       defaultContainerOptions:
         image:
           repository: linuxserver/radarr
@@ -95,6 +110,7 @@ radarr:
         - path: /downloads
 
 postgresql:
+  enabled: false
   architecture: standalone
   auth:
     database: radarr-main
@@ -108,6 +124,45 @@ postgresql:
       requests:
         cpu: "1"
         memory: 2Gi
+
+# ExternalSecrets: sync config.xml (api_key + postgres) from 1Password. When enabled, remove app item from onepassworditem.items.
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: onepassword-connect
+    kind: ClusterSecretStore
+  configXml:
+    secretName: radarr
+    apiKeyRef:
+      key: radarr
+      property: api_key
+    database: sqlite # sqlite|bitnami|operator|external
+    postgres:
+      user: postgres
+      port: "5432"
+      host: ""
+      mainDb: radarr-main
+      logDb: radarr-log
+      credentialsRef:
+        key: radarr-postgresql-credentials
+        property: password
+    # All config.xml options are configurable; these are defaults matching upstream.
+    options:
+      logLevel: Info
+      port: "7878"
+      urlBase: ""
+      bindAddress: "*"
+      sslPort: "7878"
+      enableSsl: "False"
+      authenticationMethod: Basic
+      branch: nightly
+      launchBrowser: "False"
+      updateMechanism: Docker
+      analyticsEnabled: "False"
+      updateAutomatically: "True"
+      instanceName: Radarr
+    # additionalOptions: {} # map of extra <Key>Value</Key> elements to append into config.xml
 
 onepassworditem:
   enabled: true
