@@ -3,7 +3,7 @@ name: Helm chart CI
 on:
   push:
     branches: [main]
-    paths: &chart_paths
+    paths:
       - 'Chart.yaml'
       - 'values.yaml'
       - 'values/**'
@@ -12,7 +12,13 @@ on:
       - 'templates/**'
   pull_request:
     branches: [main]
-    paths: *chart_paths
+    paths:
+      - 'Chart.yaml'
+      - 'values.yaml'
+      - 'values/**'
+      - 'README.md'
+      - '.helmignore'
+      - 'templates/**'
   release:
     types: [published]
   workflow_run:
