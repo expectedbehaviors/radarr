@@ -34,6 +34,9 @@ concurrency: helm-chart-radarr
 
 jobs:
   ci:
+    permissions:
+      contents: write
+      pull-requests: read
     uses: expectedbehaviors/github-actions/.github/workflows/helm-chart-ci.yml@main
     secrets: inherit
     with:
