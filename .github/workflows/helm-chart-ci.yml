@@ -1,0 +1,51 @@
+name: Helm chart CI
+
+on:
+  push:
+    branches: [main]
+    paths: &chart_paths
+      - 'Chart.yaml'
+      - 'values.yaml'
+      - 'values/**'
+      - 'README.md'
+      - '.helmignore'
+      - 'templates/**'
+  pull_request:
+    branches: [main]
+    paths: *chart_paths
+  release:
+    types: [published]
+  workflow_run:
+    workflows: ["Helm chart CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      baseline_version:
+        description: 'First release version when no tags exist (e.g. 1.0.0)'
+        required: false
+      release_tag:
+        description: 'Release tag override (e.g. radarr-v1.0.0)'
+        required: false
+
+concurrency: helm-chart-radarr
+
+jobs:
+  ci:
+    uses: expectedbehaviors/github-actions/.github/workflows/helm-chart-ci.yml@main
+    secrets: inherit
+    with:
+      chart_path: .
+      chart_name: radarr
+      tag_prefix: radarr-v
+      helm_repositories: |
+        bjw-s=https://bjw-s-labs.github.io/helm-charts
+        onepassworditem=https://expectedbehaviors.github.io/OnePasswordItem-helm
+      helm_repo_name: bjw-s
+      helm_repo_url: https://bjw-s-labs.github.io/helm-charts
+      helm_repo_name_2: onepassworditem
+      helm_repo_url_2: https://expectedbehaviors.github.io/OnePasswordItem-helm
+      publish_enabled: true
+      release_notes_enabled: true
+      initial_version: ${{ github.event.inputs.baseline_version || '' }}
+      release_tag: ${{ github.event.inputs.release_tag || '' }}
