@@ -15,31 +15,36 @@ on:
       - 'README.md'
       - '.helmignore'
       - 'templates/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Chart.yaml'
+      - 'values.yaml'
+      - 'values/**'
+      - 'README.md'
+      - '.helmignore'
+      - 'templates/**'
 
 concurrency: release-radarr
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Lint chart
-        uses: expectedbehaviors/github-actions/.github/actions/helm-lint@main
-        with:
-          chart_path: .
+  validate:
+    if: github.event_name == 'pull_request'
+    uses: expectedbehaviors/github-actions/.github/workflows/helm-chart-validate.yml@main
+    with:
+      chart_path: .
+      helm_repositories: |
+        bjw-s=https://bjw-s-labs.github.io/helm-charts
+        onepassworditem=https://expectedbehaviors.github.io/OnePasswordItem-helm
 
   release:
-    runs-on: ubuntu-latest
-    needs: lint
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Release on merge (create tag and release)
-        uses: expectedbehaviors/github-actions/.github/actions/release-on-merge@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag_prefix: "radarr-v"
-          initial_version: ${{ github.event.inputs.baseline_version || '' }}
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    uses: expectedbehaviors/github-actions/.github/workflows/helm-chart-release-on-merge.yml@main
+    secrets: inherit
+    with:
+      chart_path: .
+      helm_repositories: |
+        bjw-s=https://bjw-s-labs.github.io/helm-charts
+        onepassworditem=https://expectedbehaviors.github.io/OnePasswordItem-helm
+      tag_prefix: radarr-v
+      initial_version: ${{ github.event.inputs.baseline_version || '' }}

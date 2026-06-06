@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (e.g. v1.0.0). Default: latest release.'
+        description: 'Release tag (e.g. radarr-v1.0.0). Default: latest release.'
         required: false
 
 permissions:
@@ -20,23 +20,14 @@ jobs:
   package-and-upload:
     runs-on: ubuntu-latest
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Add Bitnami Helm repo
-        run: helm repo add bitnami https://charts.bitnami.com/bitnami
-      - name: Package and upload Helm chart
-        uses: expectedbehaviors/github-actions/.github/actions/helm-publish@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          chart_path: .
-          chart_name: radarr
-          helm_repo_name: bjw-s
-          helm_repo_url: https://bjw-s-labs.github.io/helm-charts
-          helm_repo_name_2: onepassworditem
-          helm_repo_url_2: https://expectedbehaviors.github.io/OnePasswordItem-helm
-          tag_version_prefix: "radarr-v"
-          release_tag: ${{ github.event.inputs.release_tag }}
+    uses: expectedbehaviors/github-actions/.github/workflows/helm-chart-publish.yml@main
+    secrets: inherit
+    with:
+      chart_path: .
+      chart_name: radarr
+      helm_repo_name: bjw-s
+      helm_repo_url: https://bjw-s-labs.github.io/helm-charts
+      helm_repo_name_2: onepassworditem
+      helm_repo_url_2: https://expectedbehaviors.github.io/OnePasswordItem-helm
+      tag_version_prefix: radarr-v
+      release_tag: ${{ github.event.inputs.release_tag }}
